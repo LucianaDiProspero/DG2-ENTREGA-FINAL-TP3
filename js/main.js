@@ -17,6 +17,7 @@ const howSection = document.querySelector(".how");
 const benefitsSection = document.querySelector(".benefits");
 const specExploded = document.querySelector(".spec-exploded");
 const lastHowStep = howSection?.querySelector(".how-step:last-child");
+const ritualVideos = [...document.querySelectorAll(".ritual-card video")];
 const benefitTabs = document.querySelectorAll("[data-benefit-index]");
 const benefitItems = document.querySelectorAll(".benefit-item");
 const benefitImage = document.querySelector(".benefit-image");
@@ -376,6 +377,62 @@ const howObserver = howSection
 if (howSection && howObserver) {
   howObserver.observe(howSection);
 }
+
+ritualVideos.forEach((video) => {
+  const card = video.closest(".ritual-card");
+  let isHovered = false;
+  let replayTimer;
+
+  video.autoplay = false;
+  video.loop = false;
+  video.muted = true;
+  video.controls = false;
+  video.pause();
+  video.currentTime = 0;
+
+  card?.addEventListener("mouseenter", () => {
+    isHovered = true;
+
+    if (video.ended) {
+      replayTimer = window.setTimeout(() => {
+        if (!isHovered) {
+          return;
+        }
+
+        video.currentTime = 0;
+        card.classList.add("is-video-playing");
+        video.play().catch(() => card.classList.remove("is-video-playing"));
+      }, 300);
+      return;
+    }
+
+    card.classList.add("is-video-playing");
+    video.play().catch(() => card.classList.remove("is-video-playing"));
+  });
+
+  card?.addEventListener("mouseleave", () => {
+    isHovered = false;
+    window.clearTimeout(replayTimer);
+    video.pause();
+    card.classList.remove("is-video-playing");
+  });
+
+  video.addEventListener("ended", () => {
+    card?.classList.remove("is-video-playing");
+
+    if (isHovered) {
+      replayTimer = window.setTimeout(() => {
+        if (!isHovered) {
+          return;
+        }
+
+        video.currentTime = 0;
+        card?.classList.add("is-video-playing");
+        video.play().catch(() => card?.classList.remove("is-video-playing"));
+      }, 300);
+    }
+  });
+});
 
 brandLink?.addEventListener("click", (event) => {
   event.preventDefault();
