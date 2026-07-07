@@ -117,6 +117,12 @@ a {
   color: var(--clay);
 }
 
+@media (min-width: 769px) and (hover: hover) {
+  .header-links a:not(.is-active):hover {
+    color: var(--peach);
+  }
+}
+
 .section-light,
 .section-muted,
 .section-dark {
@@ -2926,6 +2932,12 @@ body.ambassador-modal-open {
   display: flex;
   max-width: 620px;
   gap: 10px;
+}
+
+.footer-form .button {
+  border: 0;
+  box-shadow: none;
+  appearance: none;
 }
 
 .footer-form input {
