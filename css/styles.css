@@ -3824,6 +3824,10 @@ body.ambassador-modal-open {
     min-height: 100svh;
   }
 
+  .hero-scroll {
+    --mobile-header-height: 54px;
+  }
+
   .hero-media {
     inset: 0;
   }
@@ -3834,14 +3838,15 @@ body.ambassador-modal-open {
   }
 
   .hero-content {
-    align-items: center;
-    padding-top: 82px;
-    padding-bottom: 76px;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: calc(var(--mobile-header-height) + 56px);
+    padding-bottom: 104px;
   }
 
   .hero-content .hero-product-copy {
     width: 100%;
-    transform: translateY(-2.4cm);
   }
 
   .hero-tagline {
