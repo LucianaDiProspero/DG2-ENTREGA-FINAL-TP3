@@ -933,6 +933,8 @@ let ambassadorTransitionTimer;
 let ambassadorTouchStartX = 0;
 let ambassadorTouchStartY = 0;
 let ambassadorSwipeHandled = false;
+let ambassadorModalScrollY = 0;
+let ambassadorModalMeasureFrame;
 const ambassadorMobileQuery = window.matchMedia("(max-width: 768px)");
 const ambassadorDesktopQuery = window.matchMedia("(min-width: 992px)");
 
@@ -951,7 +953,7 @@ const updateAmbassadorModalTitleSize = () => {
 
   ambassadorModalName.classList.remove("is-title-multiline", "is-title-long");
 
-  if (!ambassadorMobileQuery.matches) {
+  if (!ambassadorMobileQuery.matches || !ambassadorModal?.classList.contains("is-open")) {
     return;
   }
 
@@ -969,6 +971,29 @@ const updateAmbassadorModalTitleSize = () => {
   } else if (lineCount > 1.35) {
     ambassadorModalName.classList.add("is-title-multiline");
   }
+};
+
+const scheduleAmbassadorModalTitleSize = () => {
+  if (ambassadorModalMeasureFrame) {
+    window.cancelAnimationFrame(ambassadorModalMeasureFrame);
+  }
+
+  const measureAfterLayout = () => {
+    ambassadorModalMeasureFrame = window.requestAnimationFrame(() => {
+      ambassadorModalMeasureFrame = window.requestAnimationFrame(() => {
+        ambassadorModalMeasureFrame = undefined;
+        updateAmbassadorModalTitleSize();
+      });
+    });
+  };
+
+  measureAfterLayout();
+
+  document.fonts?.ready.then(() => {
+    if (ambassadorModal?.classList.contains("is-open")) {
+      measureAfterLayout();
+    }
+  });
 };
 
 const renderAmbassador = (index) => {
@@ -1037,7 +1062,7 @@ const renderAmbassadorModal = () => {
   ambassadorModalDots.innerHTML = modalImages.map((_, imageIndex) => `
     <button class="ambassador-modal-dot${imageIndex === activeAmbassadorImage ? " is-active" : ""}" type="button" data-ambassador-modal-index="${imageIndex}" aria-label="Ver imagen ${imageIndex + 1}" aria-current="${imageIndex === activeAmbassadorImage ? "true" : "false"}"></button>
   `).join("");
-  requestAnimationFrame(updateAmbassadorModalTitleSize);
+  ambassadorModalName.classList.remove("is-title-multiline", "is-title-long");
 };
 
 const openAmbassadorModal = (imageIndex, trigger, profileIndex) => {
@@ -1052,10 +1077,12 @@ const openAmbassadorModal = (imageIndex, trigger, profileIndex) => {
 
   activeAmbassadorImage = imageIndex;
   ambassadorModalTrigger = trigger;
-  renderAmbassadorModal();
+  ambassadorModalScrollY = window.scrollY;
+  document.body.classList.add("ambassador-modal-open");
   ambassadorModal.classList.add("is-open");
   ambassadorModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("ambassador-modal-open");
+  renderAmbassadorModal();
+  scheduleAmbassadorModalTitleSize();
   ambassadorModal.querySelector(".ambassador-modal-close")?.focus();
 };
 
@@ -1067,6 +1094,11 @@ const closeAmbassadorModal = () => {
   ambassadorModal.classList.remove("is-open");
   ambassadorModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("ambassador-modal-open");
+  if (ambassadorModalMeasureFrame) {
+    window.cancelAnimationFrame(ambassadorModalMeasureFrame);
+    ambassadorModalMeasureFrame = undefined;
+  }
+  ambassadorModalName?.classList.remove("is-title-multiline", "is-title-long");
   ambassadorModalTrigger?.focus();
 };
 
@@ -1168,7 +1200,7 @@ document.addEventListener("keydown", (event) => {
 renderAmbassador(activeAmbassador);
 ambassadorMobileQuery.addEventListener("change", () => renderAmbassador(activeAmbassador));
 ambassadorDesktopQuery.addEventListener("change", () => renderAmbassador(activeAmbassador));
-window.addEventListener("resize", updateAmbassadorModalTitleSize);
+window.addEventListener("resize", scheduleAmbassadorModalTitleSize);
 
 const updateHero = () => {
   heroScrollCue?.classList.toggle("is-hidden", window.scrollY > 8);
