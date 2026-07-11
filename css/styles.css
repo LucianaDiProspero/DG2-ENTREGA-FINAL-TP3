@@ -4287,6 +4287,12 @@ body.ambassador-modal-open {
 }
 
 @media (max-width: 768px) {
+  .final-cta .footer-scene-complete {
+    object-position: 64% calc(50% - 1cm);
+  }
+}
+
+@media (max-width: 768px) {
   .accessory-accordion {
     position: relative;
     display: block;
