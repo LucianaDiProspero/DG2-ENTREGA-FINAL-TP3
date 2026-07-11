@@ -4288,7 +4288,7 @@ body.ambassador-modal-open {
 
 @media (max-width: 768px) {
   .final-cta .footer-scene-complete {
-    object-position: 64% calc(50% + 2cm);
+    content: url("../assets/CTAFINAL-foto.svg");
   }
 }
 
