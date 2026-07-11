@@ -935,6 +935,8 @@ let ambassadorTouchStartY = 0;
 let ambassadorSwipeHandled = false;
 let ambassadorModalScrollY = 0;
 let ambassadorModalMeasureFrame;
+let ambassadorModalMeasureToken = 0;
+let ambassadorModalRenderedProfileIndex;
 const ambassadorMobileQuery = window.matchMedia("(max-width: 768px)");
 const ambassadorDesktopQuery = window.matchMedia("(min-width: 992px)");
 
@@ -946,12 +948,25 @@ const getAmbassadorImages = (ambassador) => {
   return [...ambassador.mobileImages, ...ambassador.images];
 };
 
-const updateAmbassadorModalTitleSize = () => {
+const resetAmbassadorModalTitleState = () => {
   if (!ambassadorModalName) {
     return;
   }
 
   ambassadorModalName.classList.remove("is-title-multiline", "is-title-long");
+  ambassadorModalName.style.fontSize = "";
+  ambassadorModalName.style.lineHeight = "";
+  ambassadorModalName.style.transform = "";
+  ambassadorModalName.style.height = "";
+  ambassadorModalName.style.maxHeight = "";
+};
+
+const updateAmbassadorModalTitleSize = (measureToken) => {
+  if (!ambassadorModalName || measureToken !== ambassadorModalMeasureToken) {
+    return;
+  }
+
+  resetAmbassadorModalTitleState();
 
   if (!ambassadorMobileQuery.matches || !ambassadorModal?.classList.contains("is-open")) {
     return;
@@ -971,9 +986,31 @@ const updateAmbassadorModalTitleSize = () => {
   } else if (lineCount > 1.35) {
     ambassadorModalName.classList.add("is-title-multiline");
   }
+
+  window.requestAnimationFrame(() => {
+    if (
+      measureToken !== ambassadorModalMeasureToken ||
+      !ambassadorMobileQuery.matches ||
+      !ambassadorModal?.classList.contains("is-open") ||
+      !ambassadorModalStory
+    ) {
+      return;
+    }
+
+    const titleRect = ambassadorModalName.getBoundingClientRect();
+    const storyRect = ambassadorModalStory.getBoundingClientRect();
+
+    if (titleRect.bottom > storyRect.top - 8 && !ambassadorModalName.classList.contains("is-title-long")) {
+      ambassadorModalName.classList.remove("is-title-multiline");
+      ambassadorModalName.classList.add("is-title-long");
+    }
+  });
 };
 
 const scheduleAmbassadorModalTitleSize = () => {
+  ambassadorModalMeasureToken += 1;
+  const measureToken = ambassadorModalMeasureToken;
+
   if (ambassadorModalMeasureFrame) {
     window.cancelAnimationFrame(ambassadorModalMeasureFrame);
   }
@@ -982,7 +1019,7 @@ const scheduleAmbassadorModalTitleSize = () => {
     ambassadorModalMeasureFrame = window.requestAnimationFrame(() => {
       ambassadorModalMeasureFrame = window.requestAnimationFrame(() => {
         ambassadorModalMeasureFrame = undefined;
-        updateAmbassadorModalTitleSize();
+        updateAmbassadorModalTitleSize(measureToken);
       });
     });
   };
@@ -990,7 +1027,7 @@ const scheduleAmbassadorModalTitleSize = () => {
   measureAfterLayout();
 
   document.fonts?.ready.then(() => {
-    if (ambassadorModal?.classList.contains("is-open")) {
+    if (measureToken === ambassadorModalMeasureToken && ambassadorModal?.classList.contains("is-open")) {
       measureAfterLayout();
     }
   });
@@ -1045,24 +1082,34 @@ const renderAmbassador = (index) => {
   ambassadorLink.href = ambassador.profileUrl;
 };
 
-const getActiveAmbassadorProfile = () => ambassadorProfiles[ambassadorDisplayOrder[activeAmbassador]];
+const getActiveAmbassadorProfileIndex = () => ambassadorDisplayOrder[activeAmbassador];
+const getActiveAmbassadorProfile = () => ambassadorProfiles[getActiveAmbassadorProfileIndex()];
 
 const renderAmbassadorModal = () => {
   const ambassador = getActiveAmbassadorProfile();
+  const profileIndex = getActiveAmbassadorProfileIndex();
   const modalImages = getAmbassadorImages(ambassador);
   const [src, alt] = modalImages[activeAmbassadorImage];
+  const didChangeProfile = ambassadorModalRenderedProfileIndex !== profileIndex;
 
   ambassadorModalImage.src = src;
   ambassadorModalImage.alt = alt;
-  ambassadorModalName.innerHTML = ambassador.displayName || ambassador.name;
-  ambassadorModalHandle.textContent = ambassador.handle;
-  ambassadorModalRole.textContent = ambassador.role;
-  ambassadorModalStory.textContent = ambassador.story;
-  ambassadorModalLink.href = ambassador.profileUrl;
+
+  if (didChangeProfile) {
+    resetAmbassadorModalTitleState();
+    ambassadorModalName.innerHTML = ambassador.displayName || ambassador.name;
+    ambassadorModalHandle.textContent = ambassador.handle;
+    ambassadorModalRole.textContent = ambassador.role;
+    ambassadorModalStory.textContent = ambassador.story;
+    ambassadorModalLink.href = ambassador.profileUrl;
+    ambassadorModalRenderedProfileIndex = profileIndex;
+  }
+
   ambassadorModalDots.innerHTML = modalImages.map((_, imageIndex) => `
     <button class="ambassador-modal-dot${imageIndex === activeAmbassadorImage ? " is-active" : ""}" type="button" data-ambassador-modal-index="${imageIndex}" aria-label="Ver imagen ${imageIndex + 1}" aria-current="${imageIndex === activeAmbassadorImage ? "true" : "false"}"></button>
   `).join("");
-  ambassadorModalName.classList.remove("is-title-multiline", "is-title-long");
+
+  return didChangeProfile;
 };
 
 const openAmbassadorModal = (imageIndex, trigger, profileIndex) => {
@@ -1081,6 +1128,7 @@ const openAmbassadorModal = (imageIndex, trigger, profileIndex) => {
   document.body.classList.add("ambassador-modal-open");
   ambassadorModal.classList.add("is-open");
   ambassadorModal.setAttribute("aria-hidden", "false");
+  ambassadorModalRenderedProfileIndex = undefined;
   renderAmbassadorModal();
   scheduleAmbassadorModalTitleSize();
   ambassadorModal.querySelector(".ambassador-modal-close")?.focus();
@@ -1098,14 +1146,19 @@ const closeAmbassadorModal = () => {
     window.cancelAnimationFrame(ambassadorModalMeasureFrame);
     ambassadorModalMeasureFrame = undefined;
   }
-  ambassadorModalName?.classList.remove("is-title-multiline", "is-title-long");
+  ambassadorModalMeasureToken += 1;
+  ambassadorModalRenderedProfileIndex = undefined;
+  resetAmbassadorModalTitleState();
   ambassadorModalTrigger?.focus();
 };
 
 const moveAmbassadorModal = (direction) => {
   const imageCount = getAmbassadorImages(getActiveAmbassadorProfile()).length;
   activeAmbassadorImage = (activeAmbassadorImage + direction + imageCount) % imageCount;
-  renderAmbassadorModal();
+  const didChangeProfile = renderAmbassadorModal();
+  if (didChangeProfile) {
+    scheduleAmbassadorModalTitleSize();
+  }
 };
 
 const setActiveAmbassador = (index) => {
@@ -1183,7 +1236,10 @@ ambassadorModalDots?.addEventListener("click", (event) => {
   const dot = event.target.closest("[data-ambassador-modal-index]");
   if (dot) {
     activeAmbassadorImage = Number(dot.dataset.ambassadorModalIndex);
-    renderAmbassadorModal();
+    const didChangeProfile = renderAmbassadorModal();
+    if (didChangeProfile) {
+      scheduleAmbassadorModalTitleSize();
+    }
   }
 });
 
