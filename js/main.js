@@ -944,6 +944,33 @@ const getAmbassadorImages = (ambassador) => {
   return [...ambassador.mobileImages, ...ambassador.images];
 };
 
+const updateAmbassadorModalTitleSize = () => {
+  if (!ambassadorModalName) {
+    return;
+  }
+
+  ambassadorModalName.classList.remove("is-title-multiline", "is-title-long");
+
+  if (!ambassadorMobileQuery.matches) {
+    return;
+  }
+
+  const styles = window.getComputedStyle(ambassadorModalName);
+  const lineHeight = parseFloat(styles.lineHeight);
+
+  if (!lineHeight) {
+    return;
+  }
+
+  const lineCount = ambassadorModalName.scrollHeight / lineHeight;
+
+  if (lineCount > 2.35) {
+    ambassadorModalName.classList.add("is-title-long");
+  } else if (lineCount > 1.35) {
+    ambassadorModalName.classList.add("is-title-multiline");
+  }
+};
+
 const renderAmbassador = (index) => {
   if (!ambassadorGallery) {
     return;
@@ -1010,6 +1037,7 @@ const renderAmbassadorModal = () => {
   ambassadorModalDots.innerHTML = modalImages.map((_, imageIndex) => `
     <button class="ambassador-modal-dot${imageIndex === activeAmbassadorImage ? " is-active" : ""}" type="button" data-ambassador-modal-index="${imageIndex}" aria-label="Ver imagen ${imageIndex + 1}" aria-current="${imageIndex === activeAmbassadorImage ? "true" : "false"}"></button>
   `).join("");
+  requestAnimationFrame(updateAmbassadorModalTitleSize);
 };
 
 const openAmbassadorModal = (imageIndex, trigger, profileIndex) => {
@@ -1140,6 +1168,7 @@ document.addEventListener("keydown", (event) => {
 renderAmbassador(activeAmbassador);
 ambassadorMobileQuery.addEventListener("change", () => renderAmbassador(activeAmbassador));
 ambassadorDesktopQuery.addEventListener("change", () => renderAmbassador(activeAmbassador));
+window.addEventListener("resize", updateAmbassadorModalTitleSize);
 
 const updateHero = () => {
   heroScrollCue?.classList.toggle("is-hidden", window.scrollY > 8);

@@ -3383,10 +3383,10 @@ body.ambassador-modal-open {
 
   .ambassador-modal-dialog {
     grid-template-columns: 1fr;
-    grid-template-rows: clamp(240px, 46svh, 400px) minmax(0, 1fr);
+    grid-template-rows: clamp(270px, 48dvh, 405px) minmax(0, 1fr);
     width: 100%;
-    height: calc(100svh - 24px);
-    max-height: calc(100svh - 24px);
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
     overflow: hidden;
   }
 
@@ -3405,19 +3405,53 @@ body.ambassador-modal-open {
   }
 
   .ambassador-modal-content {
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    padding: 28px 24px 32px;
+    padding: 20px 24px 24px;
   }
 
   .ambassador-modal-content h3 {
-    font-size: clamp(2.65rem, 14vw, 4rem);
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    font-size: clamp(2.7rem, 14vw, 4rem);
+    line-height: 0.9;
+    text-overflow: clip;
+  }
+
+  .ambassador-modal-content h3.is-title-multiline {
+    font-size: clamp(2.5rem, 12.6vw, 3.65rem);
+    line-height: 0.88;
+  }
+
+  .ambassador-modal-content h3.is-title-long {
+    font-size: clamp(2.05rem, 10.3vw, 3rem);
+    line-height: 0.86;
+    letter-spacing: 0.005em;
+  }
+
+  .ambassador-modal-handle {
+    margin-top: 5px;
   }
 
   .ambassador-modal-story {
-    margin-top: 20px;
+    margin-top: 13px;
+    font-size: 0.95rem;
+    line-height: 1.42;
+  }
+
+  .ambassador-modal-dots {
+    margin-top: auto;
+    padding-top: 16px;
+  }
+
+  .ambassador-modal-link {
+    margin-top: 16px;
   }
 
   .ambassador-modal-arrow,
@@ -4409,11 +4443,11 @@ body.ambassador-modal-open {
   }
 
   .spec-exploded.is-open .exploded-minipresso-mobile #tapa_vertical {
-    transform: translateY(-1066px);
+    transform: translateY(calc(-1066px - 1cm));
   }
 
   .spec-exploded.is-open .exploded-minipresso-mobile #contratapa_vertical {
-    transform: translateY(-382px);
+    transform: translateY(calc(-382px - 5mm));
   }
 
   .spec-exploded.is-open .exploded-minipresso-mobile #filtro_vertical {
@@ -4445,9 +4479,9 @@ body.ambassador-modal-open {
     z-index: 6;
   }
 
-  .hotspot-tapa { top: calc(7% + 3cm); left: 58%; }
-  .hotspot-contratapa { top: calc(25% + 2cm); left: 43%; }
-  .hotspot-filtro { top: 43%; left: 58%; }
+  .hotspot-tapa { top: calc(7% + 3cm - 5mm - 1cm); left: 58%; }
+  .hotspot-contratapa { top: calc(25% + 2cm - 5mm - 5mm); left: 43%; }
+  .hotspot-filtro { top: calc(43% + 3mm - 5mm); left: 58%; }
   .hotspot-cuerpo { top: 63%; left: 43%; }
   .hotspot-piso { top: calc(81% + 1cm); left: 58%; }
 
@@ -4471,9 +4505,9 @@ body.ambassador-modal-open {
     z-index: 5;
   }
 
-  .note-tapa { top: calc(12% + 2cm); }
-  .note-contratapa { top: calc(30% + 1cm); }
-  .note-filtro { top: calc(48% - 1cm); }
+  .note-tapa { top: calc(12% + 2cm - 5mm - 1cm); }
+  .note-contratapa { top: calc(30% + 1cm - 5mm - 5mm); }
+  .note-filtro { top: calc(48% - 1cm - 2mm); }
   .note-cuerpo { top: calc(68% - 1cm); }
   .note-piso { top: 86%; }
 
