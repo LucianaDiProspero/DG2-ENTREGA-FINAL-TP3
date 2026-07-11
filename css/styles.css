@@ -1269,6 +1269,10 @@ a {
   opacity: 0.86;
 }
 
+.ritual-play-button {
+  display: none;
+}
+
 .ritual-card-caption {
   position: absolute;
   right: 24px;
@@ -3461,6 +3465,65 @@ body.ambassador-modal-open {
     margin-top: 10px;
     opacity: 1;
     transform: none;
+  }
+
+  .ritual-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.95);
+    animation: none;
+    transition: opacity 250ms ease, transform 250ms ease;
+  }
+
+  .ritual-play-icon {
+    display: block;
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    opacity: 0.94;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
+  }
+
+  .ritual-card.is-video-paused .ritual-play-button,
+  .ritual-card.is-video-ended .ritual-play-button {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    animation: ritual-play-enter 200ms ease both;
+  }
+
+  .ritual-card.is-video-intro .ritual-play-button,
+  .ritual-card.is-video-locked .ritual-play-button,
+  .ritual-card.is-video-playing .ritual-play-button {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  @keyframes ritual-play-enter {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
   }
 
   .benefits.benefit-strip {

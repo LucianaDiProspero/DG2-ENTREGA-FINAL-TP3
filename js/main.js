@@ -30,6 +30,7 @@ const finalCta = document.querySelector(".final-cta");
 const newsletterForm = document.querySelector("[data-newsletter-form]");
 const newsletterStatus = document.querySelector("[data-newsletter-status]");
 const desktopHoverQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+const mobileMediaQuery = window.matchMedia("(max-width: 768px)");
 
 const benefits = [
   {
@@ -414,8 +415,76 @@ if (howSection && howObserver) {
   howObserver.observe(howSection);
 }
 
-ritualVideos.forEach((video) => {
+let activeRitualVideo;
+let hasStartedMobileRitualIntro = false;
+let hasUnlockedMobileRitualVideos = false;
+
+const setRitualVideoState = (card, state) => {
+  card?.classList.remove(
+    "is-video-intro",
+    "is-video-locked",
+    "is-video-playing",
+    "is-video-paused",
+    "is-video-ended",
+  );
+
+  if (state) {
+    card?.classList.add(state);
+  }
+};
+
+const pauseRitualVideo = (video) => {
   const card = video.closest(".ritual-card");
+  video.pause();
+  if (mobileMediaQuery.matches && !video.ended && !card?.classList.contains("is-video-locked") && !card?.classList.contains("is-video-intro")) {
+    setRitualVideoState(card, "is-video-paused");
+    card?.querySelector(".ritual-play-icon")?.setAttribute("src", "assets/icono-play.svg");
+    return;
+  }
+
+  card?.classList.remove("is-video-playing");
+};
+
+const playRitualVideo = (video, restart = false) => {
+  const card = video.closest(".ritual-card");
+
+  if (mobileMediaQuery.matches && card?.classList.contains("is-video-locked") && video !== ritualVideos[0]) {
+    setRitualVideoState(card, "is-video-paused");
+    card?.querySelector(".ritual-play-icon")?.setAttribute("src", "assets/icono-play.svg");
+  }
+
+  ritualVideos.forEach((otherVideo) => {
+    if (otherVideo !== video) {
+      if (mobileMediaQuery.matches && video !== ritualVideos[0] && otherVideo.ended) {
+        const otherCard = otherVideo.closest(".ritual-card");
+        setRitualVideoState(otherCard, "is-video-paused");
+        otherCard?.querySelector(".ritual-play-icon")?.setAttribute("src", "assets/icono-play.svg");
+        return;
+      }
+
+      pauseRitualVideo(otherVideo);
+    }
+  });
+
+  if (restart) {
+    video.currentTime = 0;
+  }
+
+  activeRitualVideo = video;
+  setRitualVideoState(card, "is-video-playing");
+  video.play().catch(() => {
+    if (mobileMediaQuery.matches) {
+      setRitualVideoState(card, video === ritualVideos[0] && !hasUnlockedMobileRitualVideos ? "is-video-intro" : "is-video-paused");
+      return;
+    }
+
+    card?.classList.remove("is-video-playing");
+  });
+};
+
+ritualVideos.forEach((video, index) => {
+  const card = video.closest(".ritual-card");
+  const playButton = document.createElement("button");
   let isHovered = false;
   let replayTimer;
 
@@ -425,8 +494,39 @@ ritualVideos.forEach((video) => {
   video.controls = false;
   video.pause();
   video.currentTime = 0;
+  if (index === 0) {
+    setRitualVideoState(card, "is-video-intro");
+  }
+
+  if (index > 0) {
+    setRitualVideoState(card, "is-video-locked");
+  }
+
+  playButton.className = "ritual-play-button";
+  playButton.type = "button";
+  playButton.setAttribute("aria-label", `Reproducir video ${index + 1}`);
+  playButton.innerHTML = '<img class="ritual-play-icon" src="assets/icono-play.svg" alt="" aria-hidden="true">';
+  card?.appendChild(playButton);
+
+  const handleMobilePlay = (event) => {
+    if (!mobileMediaQuery.matches) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    playRitualVideo(video, video.ended);
+  };
+
+  card?.addEventListener("click", handleMobilePlay);
+  playButton.addEventListener("click", handleMobilePlay);
 
   card?.addEventListener("mouseenter", () => {
+    if (mobileMediaQuery.matches) {
+      return;
+    }
+
     isHovered = true;
 
     if (video.ended) {
@@ -436,17 +536,21 @@ ritualVideos.forEach((video) => {
         }
 
         video.currentTime = 0;
-        card.classList.add("is-video-playing");
+        setRitualVideoState(card, "is-video-playing");
         video.play().catch(() => card.classList.remove("is-video-playing"));
       }, 300);
       return;
     }
 
-    card.classList.add("is-video-playing");
+    setRitualVideoState(card, "is-video-playing");
     video.play().catch(() => card.classList.remove("is-video-playing"));
   });
 
   card?.addEventListener("mouseleave", () => {
+    if (mobileMediaQuery.matches) {
+      return;
+    }
+
     isHovered = false;
     window.clearTimeout(replayTimer);
     video.pause();
@@ -454,7 +558,19 @@ ritualVideos.forEach((video) => {
   });
 
   video.addEventListener("ended", () => {
-    card?.classList.remove("is-video-playing");
+    setRitualVideoState(card, "is-video-ended");
+    card?.querySelector(".ritual-play-icon")?.setAttribute("src", "assets/icono-replay.svg");
+
+    if (mobileMediaQuery.matches && index === 0 && !hasUnlockedMobileRitualVideos) {
+      hasUnlockedMobileRitualVideos = true;
+      ritualVideos.forEach((ritualVideo) => {
+        const ritualCard = ritualVideo.closest(".ritual-card");
+        if (ritualVideo !== video && !ritualVideo.ended) {
+          setRitualVideoState(ritualCard, "is-video-paused");
+          ritualCard?.querySelector(".ritual-play-icon")?.setAttribute("src", "assets/icono-play.svg");
+        }
+      });
+    }
 
     if (isHovered) {
       replayTimer = window.setTimeout(() => {
@@ -463,12 +579,28 @@ ritualVideos.forEach((video) => {
         }
 
         video.currentTime = 0;
-        card?.classList.add("is-video-playing");
+        setRitualVideoState(card, "is-video-playing");
         video.play().catch(() => card?.classList.remove("is-video-playing"));
       }, 300);
     }
   });
 });
+
+if (howSection && ritualVideos.length) {
+  const ritualIntroObserver = new IntersectionObserver((entries) => {
+    const [entry] = entries;
+
+    if (!mobileMediaQuery.matches || hasStartedMobileRitualIntro || !entry.isIntersecting) {
+      return;
+    }
+
+    hasStartedMobileRitualIntro = true;
+    playRitualVideo(ritualVideos[0], true);
+    ritualIntroObserver.disconnect();
+  }, { threshold: 0.32 });
+
+  ritualIntroObserver.observe(howSection);
+}
 
 brandLink?.addEventListener("click", (event) => {
   event.preventDefault();

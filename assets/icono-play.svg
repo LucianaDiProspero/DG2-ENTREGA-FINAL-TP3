@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350.68 350.68">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #fcf9f4;
+        stroke-miterlimit: 10;
+        stroke-width: .75px;
+      }
+
+      .cls-2 {
+        fill: #fcf9f4;
+      }
+    </style>
+  </defs>
+  <g id="fondo_play" data-name="fondo play">
+    <circle class="cls-1" cx="175.34" cy="175.34" r="174.97"/>
+  </g>
+  <g id="play">
+    <path class="cls-2" d="M110.88,111.98v126.73c0,8.12,8.54,13.4,15.8,9.77l126.73-63.36c8.05-4.02,8.05-15.51,0-19.54l-126.73-63.36c-7.26-3.63-15.8,1.65-15.8,9.77Z"/>
+  </g>
+</svg>
