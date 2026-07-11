@@ -535,6 +535,12 @@ a {
   line-height: 1.5;
 }
 
+@media (min-width: 992px) {
+  .hero-content .hero-copy {
+    max-width: 560px;
+  }
+}
+
 .large-text {
   margin: 0 0 22px;
   color: var(--ink);
@@ -1669,7 +1675,27 @@ body.emotional-active .fixed-emotional-bg {
   overflow: visible;
   background: var(--paper);
   outline: none;
+  translate: 1.5cm 0;
   transform: translate(1cm, 5mm);
+}
+
+@media (min-width: 992px) and (max-width: 1700px) {
+  .spec-exploded {
+    max-width: calc(100vw - 96px);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: clamp(-44px, -2.8vw, -28px);
+    translate: 1.5cm 0;
+    transform: none;
+    scale: 0.95;
+    transform-origin: center top;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1919px) {
+  .spec-exploded {
+    translate: calc(1.5cm + 5mm) 0;
+  }
 }
 
 .exploded-minipresso-svg {
@@ -4425,6 +4451,7 @@ body.ambassador-modal-open {
     padding: 24px 0 38px;
     overflow: visible;
     background: var(--paper);
+    translate: 0 0;
   }
 
   .exploded-minipresso-svg {
